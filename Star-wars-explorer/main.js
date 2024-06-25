@@ -32,10 +32,6 @@ export const getStarWarsInfo = async () => {
     }
 }
 
-const images = await getStarWarsInfo()
-console.log("https://swapi.dev/api/people/")
-
-console.log(images)
 
 // Function to fetch character data from SWAPI
 const getCharacter = async (id) => {
@@ -164,7 +160,6 @@ export const handleDeletePalette = (event) => {
   currentPaletteLI.remove();
 };
 
-document.querySelector('#default-data-list').addEventListener('click', handleDeletePalette);
 
 
 
@@ -178,7 +173,18 @@ const displayCharacters = async () => {
   }
 };
 
-// Initiate the display of characters
+const main = async() => {
+  const images = await getStarWarsInfo()
+console.log("https://swapi.dev/api/people/")
+console.log(images)
 displayCharacters();
+document.querySelector('#default-data-list').addEventListener('click', handleDeletePalette);
+
+}
+
+main()
+
+// Initiate the display of characters
+
 
 

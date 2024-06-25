@@ -51,16 +51,57 @@ const getCharacter = async (id) => {
   }
 };
 
+const getHomeworld = async (url) => {
+  try {
+      const response = await fetch(url);
+      if (!response.ok) {
+          throw new Error(`Failed to fetch homeworld from ${url}`);
+      }
+      return response.json();
+  } catch (error) {
+      console.error(`Error fetching homeworld:`, error);
+      return null;
+  }
+};
+
+const getStarShip = async (url) => {
+  try {
+      const response = await fetch(url);
+      if (!response.ok) {
+          throw new Error(`Failed to fetch Starship from ${url}`);
+      }
+      return response.json();
+  } catch (error) {
+      console.error(`Error fetching Starship:`, error);
+      return null;
+  }
+};
+
+
 // Function to fetch multiple characters
 const getCharacters = async () => {
   try {
-    const characterIds = [1, 4, 10]; // IDs of characters to fetch
+    const characterIds = [1, 4, 10,]; // IDs of characters to fetch
     const characters = [];
 
     for (let id of characterIds) {
       const character = await getCharacter(id);
       if (character) {
-        characters.push(character);
+        // characters.push(character);
+
+        const homeworldData = await getHomeworld(character.homeworld);
+                character.homeworld_name = homeworldData.name; // Add homeworld name to character object
+
+
+          character.starships_names = [];
+            for (let starshipUrl of character.starships) {
+              const starshipData = await getStarShip(starshipUrl);
+              if (starshipData) {
+                character.starships_names.push(starshipData.name);
+                  }
+                }
+        
+              characters.push(character);
       } else {
         console.error(`Failed to fetch character with ID ${id}`);
       }
@@ -99,10 +140,31 @@ const renderChar = (chars) => {
     const pGender = document.createElement('p');
     pGender.textContent = `Gender: ${character.gender}`;
 
-    li.append(img, pName, pHeight, pBirth, pGender);
+    const pPlanet = document.createElement('p');
+    pPlanet.textContent = `Planet: ${character.homeworld_name}`;
+
+    const pStarship = document.createElement('p');
+    pStarship.textContent = `Starships:${character.starships_names}`
+
+
+    const deleteButton = document.createElement('button')
+    deleteButton.setAttribute('id', 'delete-btn')
+    deleteButton.textContent = 'Delete this Card'
+
+    li.append(img, pName, pHeight, pBirth, pGender, pPlanet, pStarship, deleteButton);
     listElement.appendChild(li);
   });
 };
+export const handleDeletePalette = (event) => {
+  if (!event.target.matches("#delete-btn")) {
+      return;
+  }
+
+  const currentPaletteLI = event.target.closest("li");
+  currentPaletteLI.remove();
+};
+
+document.querySelector('#default-data-list').addEventListener('click', handleDeletePalette);
 
 
 
@@ -118,3 +180,5 @@ const displayCharacters = async () => {
 
 // Initiate the display of characters
 displayCharacters();
+
+

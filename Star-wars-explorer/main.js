@@ -31,3 +31,90 @@ export const getStarWarsInfo = async () => {
 
     }
 }
+
+const images = await getStarWarsInfo()
+console.log("https://swapi.dev/api/people/")
+
+console.log(images)
+
+// Function to fetch character data from SWAPI
+const getCharacter = async (id) => {
+  try {
+    const response = await fetch(`https://swapi.dev/api/people/${id}/`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch character with ID ${id}`);
+    }
+    return response.json();
+  } catch (error) {
+    console.error(`Error fetching character with ID ${id}:`, error);
+    return null;
+  }
+};
+
+// Function to fetch multiple characters
+const getCharacters = async () => {
+  try {
+    const characterIds = [1, 4, 10]; // IDs of characters to fetch
+    const characters = [];
+
+    for (let id of characterIds) {
+      const character = await getCharacter(id);
+      if (character) {
+        characters.push(character);
+      } else {
+        console.error(`Failed to fetch character with ID ${id}`);
+      }
+    }
+
+    return characters;
+  } catch (error) {
+    console.error('Error fetching characters:', error);
+    return [];
+  }
+};
+
+// Function to render fetched characters to the page
+const renderChar = (chars) => {
+  const listElement = document.getElementById("default-data-list");
+
+  listElement.innerHTML = ''; // Clear existing content
+
+  chars.forEach(character => {
+    const li = document.createElement('li');
+
+    const img = document.createElement('img');
+    img.src = characterImage(character.url.split('/')[5]);
+    img.alt = character.name;
+    img.classList.add('character-image');
+
+    const pName = document.createElement('p');
+    pName.textContent = `Name: ${character.name}`;
+
+    const pHeight = document.createElement('p');
+    pHeight.textContent = `Height: ${character.height}`;
+
+    const pBirth = document.createElement('p');
+    pBirth.textContent = `Birth Year: ${character.birth_year}`;
+
+    const pGender = document.createElement('p');
+    pGender.textContent = `Gender: ${character.gender}`;
+
+    li.append(img, pName, pHeight, pBirth, pGender);
+    listElement.appendChild(li);
+  });
+};
+
+
+
+// Function to initiate character fetching and rendering
+const displayCharacters = async () => {
+  try {
+    const characters = await getCharacters();
+    renderChar(characters);
+  } catch (error) {
+    console.error('Failed to fetch and render characters:', error);
+  }
+};
+
+// Initiate the display of characters
+displayCharacters();

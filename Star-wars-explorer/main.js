@@ -307,7 +307,6 @@ const main = async () => {
     displayCharacters();
     const form = document.querySelector('#search-form');
     form.addEventListener('submit', searchForCharacter);
-
     document.querySelector('#default-data-list').addEventListener('click', handleDeletePalette);
 }
 

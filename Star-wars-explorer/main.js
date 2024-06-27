@@ -29,42 +29,42 @@ export const getStarWarsInfo = async () => {
 }
 
 const getCharacters = async () => {
-    const characters = [];
-    let url = 'https://swapi.dev/api/people/';
+  const characters = [];
+  let url = 'https://swapi.dev/api/people/';
 
-    try {
-        // while (url) {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error('Failed to fetch characters');
-        }
-        const data = await response.json();
+  try {
+      while (url) {
+          const response = await fetch(url);
+          if (!response.ok) {
+              throw new Error('Failed to fetch characters');
+          }
+          const data = await response.json();
 
-        // const firstThree = data.results.slice(0, 3)
-        // console.log(firstThree)
-        // Fetch additional details for each character
-        for (let character of data.results) {
-            const homeworldData = await getHomeworld(character.homeworld);
-            character.homeworld_name = homeworldData ? homeworldData.name : 'Unknown';
+          // Fetch and process details for each character
+          for (let character of data.results) {
+              const homeworldData = await getHomeworld(character.homeworld);
+              character.homeworld_name = homeworldData ? homeworldData.name : 'Unknown';
 
-            character.starships_names = [];
-            for (let starshipUrl of character.starships) {
-                const starshipData = await getStarShip(starshipUrl);
-                if (starshipData) {
-                    character.starships_names.push(starshipData.name);
-                }
-            }
-            characters.push(character);
-            // }
+              character.starships_names = [];
+              for (let starshipUrl of character.starships) {
+                  const starshipData = await getStarShip(starshipUrl);
+                  if (starshipData) {
+                      character.starships_names.push(starshipData.name);
+                  }
+              }
 
-            url = data.next; // Move to the next page, if available
-        }
-    } catch (error) {
-        console.error('Error fetching characters:', error);
-    }
+              characters.push(character);
+          }
 
-    return characters;
+          url = data.next; // Move to the next page, if available
+      }
+  } catch (error) {
+      console.error('Error fetching characters:', error);
+  }
+
+  return characters;
 };
+
 
 
 const getHomeworld = async (url) => {
@@ -287,6 +287,55 @@ const searchForCharacter = async (e) => {
 
     form.reset();
 };
+
+// const searchForCharacter = async (e) => {
+//   e.preventDefault();
+
+//   const form = e.target;
+//   const characterName = form.querySelector('#search-input').value.trim().toLowerCase(); // Convert to lowercase for case insensitivity
+
+//   if (!characterName) {
+//       console.error('Please enter a character name');
+//       return;
+//   }
+
+//   try {
+//       const allCharacters = await getCharacters();
+
+//       const matchedCharacters = allCharacters.filter(character =>
+//           character.name.toLowerCase().includes(characterName) // Check for partial match
+//       );
+
+//       if (matchedCharacters.length > 0) {
+//           const listElement = document.getElementById('search-results-list');
+
+//           // Clear previous search results
+//           listElement.innerHTML = '';
+
+//           // Render each matched character sequentially
+//           for (let character of matchedCharacters) {
+//               const homeworldData = await getHomeworld(character.homeworld);
+//               character.homeworld_name = homeworldData ? homeworldData.name : 'Unknown';
+
+//               character.starships_names = [];
+//               for (let starshipUrl of character.starships) {
+//                   const starshipData = await getStarShip(starshipUrl);
+//                   if (starshipData) {
+//                       character.starships_names.push(starshipData.name);
+//                   }
+//               }
+
+//               renderCard(listElement, character, true);
+//           }
+//       } else {
+//           console.error(`No characters found with name '${characterName}'`);
+//       }
+//   } catch (error) {
+//       console.error('Error fetching characters:', error);
+//   }
+
+//   form.reset();
+// };
 
 
 

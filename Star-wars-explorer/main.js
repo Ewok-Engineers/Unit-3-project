@@ -75,7 +75,7 @@ const getStarShip = async (url) => {
 // Function to fetch multiple characters
 const getCharacters = async () => {
     try {
-        const characterIds = [1, 4, 10,]; // IDs of characters to fetch
+        const characterIds = [1, 4, 10]; // IDs of characters to fetch
         const characters = [];
 
         for (let id of characterIds) {
@@ -251,7 +251,53 @@ const getRandomStarWarsChar = async () => {
     }
 }
 
+const searchForCharacter = async (e) => {
+  e.preventDefault();
 
+  const form = e.target;
+  const characterName = form.querySelector('#search-input').value
+
+  if (!characterName) {
+      console.error('Please enter a character name');
+      return;
+  }
+
+  try {
+      const allCharacters = await getCharacters(); 
+
+     
+      const matchedCharacters = allCharacters.filter(character =>
+        character.name.toLowerCase().includes(characterName.toLowerCase())
+      );
+
+      if (matchedCharacters.length > 0) {
+          const listElement = document.getElementById('search-results-list');
+          listElement.innerHTML = ''; // Clear previous results
+
+          // Render each matched character
+          matchedCharacters.forEach(async character => {
+              const homeworldData = await getHomeworld(character.homeworld);
+              character.homeworld_name = homeworldData ? homeworldData.name : 'Unknown';
+
+              character.starships_names = [];
+              for (let starshipUrl of character.starships) {
+                  const starshipData = await getStarShip(starshipUrl);
+                  if (starshipData) {
+                      character.starships_names.push(starshipData.name);
+                  }
+              }
+
+              renderCard(listElement, character);
+          });
+      } else {
+          console.error(`No characters found with name '${characterName}'`);
+      }
+  } catch (error) {
+      console.error('Error fetching characters:', error);
+  }
+
+  form.reset();
+};
 
 
 const main = async () => {
@@ -259,6 +305,9 @@ const main = async () => {
     console.log("https://swapi.dev/api/people/")
     console.log(images)
     displayCharacters();
+    const form = document.querySelector('#search-form');
+    form.addEventListener('submit', searchForCharacter);
+
     document.querySelector('#default-data-list').addEventListener('click', handleDeletePalette);
 }
 

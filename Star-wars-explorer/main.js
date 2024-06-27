@@ -28,20 +28,42 @@ export const getStarWarsInfo = async () => {
     }
 }
 
+const getCharacters = async () => {
+  const characters = [];
+  let url = 'https://swapi.dev/api/people/';
+  
+  try {
+      while (url) {
+          const response = await fetch(url);
+          if (!response.ok) {
+              throw new Error('Failed to fetch characters');
+          }
+          const data = await response.json();
 
-// Function to fetch character data from SWAPI
-const getCharacter = async (id) => {
-    try {
-        const response = await fetch(`https://swapi.dev/api/people/${id}/`);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch character with ID ${id}`);
-        }
-        return response.json();
-    } catch (error) {
-        console.error(`Error fetching character with ID ${id}:`, error);
-        return null;
-    }
+          // Fetch additional details for each character
+          for (let character of data.results) {
+              const homeworldData = await getHomeworld(character.homeworld);
+              character.homeworld_name = homeworldData ? homeworldData.name : 'Unknown';
+
+              character.starships_names = [];
+              for (let starshipUrl of character.starships) {
+                  const starshipData = await getStarShip(starshipUrl);
+                  if (starshipData) {
+                      character.starships_names.push(starshipData.name);
+                  }
+              }
+              characters.push(character);
+          }
+
+          url = data.next; // Move to the next page, if available
+      }
+  } catch (error) {
+      console.error('Error fetching characters:', error);
+  }
+
+  return characters;
 };
+
 
 const getHomeworld = async (url) => {
     try {
@@ -72,43 +94,9 @@ const getStarShip = async (url) => {
 
 
 
-// Function to fetch multiple characters
-const getCharacters = async () => {
-    try {
-        const characterIds = [1, 4, 10]; // IDs of characters to fetch
-        const characters = [];
+const renderCard = (listElement, character, isSearched = false ) => {
 
-        for (let id of characterIds) {
-            const character = await getCharacter(id);
-            if (character) {
-                // characters.push(character);
-
-                const homeworldData = await getHomeworld(character.homeworld);
-                character.homeworld_name = homeworldData.name; // Add homeworld name to character object
-
-
-                character.starships_names = [];
-                for (let starshipUrl of character.starships) {
-                    const starshipData = await getStarShip(starshipUrl);
-                    if (starshipData) {
-                        character.starships_names.push(starshipData.name);
-                    }
-                }
-
-                characters.push(character);
-            } else {
-                console.error(`Failed to fetch character with ID ${id}`);
-            }
-        }
-
-        return characters;
-    } catch (error) {
-        console.error('Error fetching characters:', error);
-        return [];
-    }
-};
-
-const renderCard = (listElement, character) => {
+  
     const li = document.createElement('li');
 
     const img = document.createElement('img');
@@ -151,7 +139,7 @@ const renderCard = (listElement, character) => {
     })
 
     const deleteButton = document.createElement('button')
-    deleteButton.setAttribute('id', 'delete-btn')
+    deleteButton.setAttribute('class', 'delete-btn')
     deleteButton.textContent = 'Delete this Card'
 
 
@@ -186,9 +174,8 @@ const renderChar = (chars) => {
     });
 };
 
-
 export const handleDeletePalette = (event) => {
-    if (!event.target.matches("#delete-btn")) {
+    if (!event.target.matches(".delete-btn")) {
         return;
     }
 
@@ -255,7 +242,7 @@ const searchForCharacter = async (e) => {
   e.preventDefault();
 
   const form = e.target;
-  const characterName = form.querySelector('#search-input').value
+  const characterName = form.querySelector('#search-input').value;
 
   if (!characterName) {
       console.error('Please enter a character name');
@@ -263,16 +250,14 @@ const searchForCharacter = async (e) => {
   }
 
   try {
-      const allCharacters = await getCharacters(); 
+      const allCharacters = await getCharacters();
 
-     
       const matchedCharacters = allCharacters.filter(character =>
-        character.name.toLowerCase().includes(characterName.toLowerCase())
+          character.name.toLowerCase().includes(characterName.toLowerCase())
       );
 
       if (matchedCharacters.length > 0) {
           const listElement = document.getElementById('search-results-list');
-          listElement.innerHTML = ''; // Clear previous results
 
           // Render each matched character
           matchedCharacters.forEach(async character => {
@@ -287,7 +272,8 @@ const searchForCharacter = async (e) => {
                   }
               }
 
-              renderCard(listElement, character);
+             
+              renderCard(listElement, character, true); 
           });
       } else {
           console.error(`No characters found with name '${characterName}'`);
@@ -300,6 +286,7 @@ const searchForCharacter = async (e) => {
 };
 
 
+
 const main = async () => {
     const images = await getStarWarsInfo()
     console.log("https://swapi.dev/api/people/")
@@ -307,7 +294,8 @@ const main = async () => {
     displayCharacters();
     const form = document.querySelector('#search-form');
     form.addEventListener('submit', searchForCharacter);
-    document.querySelector('#default-data-list').addEventListener('click', handleDeletePalette);
-}
+  document.querySelector('#default-data-list').addEventListener('click', handleDeletePalette);
+  document.querySelector('#search-results-list').addEventListener('click', handleDeletePalette);
+    }
 
 main()

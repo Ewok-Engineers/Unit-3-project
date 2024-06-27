@@ -40,10 +40,10 @@ const getCharacters = async () => {
         }
         const data = await response.json();
 
-        const firstThree = data.results.slice(0, 3)
-        console.log(firstThree)
+        // const firstThree = data.results.slice(0, 3)
+        // console.log(firstThree)
         // Fetch additional details for each character
-        for (let character of firstThree) {
+        for (let character of data.results) {
             const homeworldData = await getHomeworld(character.homeworld);
             character.homeworld_name = homeworldData ? homeworldData.name : 'Unknown';
 
@@ -166,15 +166,16 @@ const renderChar = (chars) => {
         if (randomCharacter) {
             renderCard(listElement, randomCharacter);
         }
+
     });
 
     listElement.append(RandomizeButton);
 
 
-    chars.forEach(character => {
-        renderCard(listElement, character);
-    });
-};
+        for (let i = 0; i < 3 && i < chars.length; i++) {
+      renderCard(listElement, chars[i]);
+}
+}
 
 export const handleDeletePalette = (event) => {
     if (!event.target.matches(".delete-btn")) {

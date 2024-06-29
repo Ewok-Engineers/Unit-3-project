@@ -1,5 +1,5 @@
 import './style.css';
-import { getCharacters, getRandomStarWarsChar } from './js/fetch.js';
+import { getCharacters, getRandomStarWarsChar, getHomeworld, getStarWarsInfo, getStarShip} from './js/fetch.js';
 import { renderCard, renderChar, handleDeletePalette } from './js/render.js';
 import { getFromLocalStorage, saveToLocalStorage } from './js/storage.js';
 
